@@ -15,6 +15,13 @@ namespace Maploader.World
     public class World
     {
         private DB db;
+        private string _worldName;
+        private string _worldPath;
+        private string _dbPath;
+
+        public string WorldName { get => _worldName; }
+
+        public string WorldPath { get => _worldPath; }
 
         public void Open(string pathDb)
         {
@@ -28,12 +35,38 @@ namespace Maploader.World
                 pathDb = Path.Combine(pathDb, "db");
             }
 
+            _worldPath = DbPathToWorldPath(pathDb);
+            LoadWorldName();
+            LoadLevelDat();
+            LoadDatabase();
+        }
+
+        private void LoadWorldName()
+        {
+            string worldNameFilePath = Path.Combine(_worldPath, "levelname.txt");
+            _worldName = File.ReadLines(worldNameFilePath).First();
+        }
+
+        private void LoadLevelDat()
+        {
+            string levelDatFilePath = Path.Combine(_worldPath, "level.dat");
+            // Process the level.dat file (NBT).
+        }
+
+        private void LoadDatabase()
+        {
+            _dbPath = Path.Combine(_worldPath, "db");
+
             var options = new Options();
             options.Compression = CompressionType.ZlibRaw;
 
-            db = new DB(options, pathDb);
+            db = new DB(options, _dbPath);
         }
 
+        private string DbPathToWorldPath(string dbPath)
+        {
+            return Directory.GetParent(dbPath).FullName;
+        }
 
         public ChunkData GetOverworldChunkData(int x, int z)
         {
